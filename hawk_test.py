@@ -129,7 +129,7 @@ def main():
     browser.test('test_add_primitive', results, myprimitive)
     ssh.verify_primitive(myprimitive, args.test_version, results)
     browser.test('test_remove_primitive', results, myprimitive)
-    ssh.verify_primitive_removed(myprimitive, results)
+    ssh.verify_primitive_removed(myprimitive, args.test_version, results)
     browser.test('test_add_clone', results, myclone)
     browser.test('test_remove_clone', results, myclone)
     browser.test('test_add_group', results, mygroup)

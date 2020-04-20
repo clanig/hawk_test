@@ -71,11 +71,22 @@ class HawkTestSSH:
         self.set_test_status(results, 'verify_primitive', 'failed')
         return False
 
-    def verify_primitive_removed(self, myprimitive, results):
+    def verify_primitive_removed(self, myprimitive, version, results):
         if self.check_cluster_conf_ssh("crm resource list | grep ocf::heartbeat:anything", ''):
             print("INFO: primitive successfully removed")
             self.set_test_status(results, 'verify_primitive_removed', 'passed')
             return True
+
+        # In SLES 15 and lower there is a deprecation warning on stderr. Workaround:
+        if Version(version) < Version('15-SP1'):
+            depr_warn_msg = "WARNING: This command 'list' is deprecated, please use 'status'"
+            _, out, err = self.ssh.exec_command("crm resource list | grep ocf::heartbeat:anything")
+            out, err = map(lambda f: f.read().decode().rstrip('\n'), (out, err))
+            if err == depr_warn_msg and out == "":
+                print("INFO: primitive successfully removed")
+                self.set_test_status(results, 'verify_primitive_removed', 'passed')
+                return True
+
         print("ERROR: primitive [%s] still present in the cluster while checking with SSH" %
               myprimitive)
         self.set_test_status(results, 'verify_primitive_removed', 'failed')
